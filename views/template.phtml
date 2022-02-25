@@ -1,0 +1,364 @@
+<?
+$articles = $view->get("articles");
+$novePrispevky = $view->get("latest");
+?><!DOCTYPE html>
+<html lang="<?=$lang["CODE"]?>">
+<head>
+
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="description" content="<?=$lang["HEAD_DESCRIPTION"]?>" />
+<meta name="keywords" content="<?=$lang["HEAD_KEYWORDS"]?>" />
+<meta name="MSSmartTagsPreventParsing" content="true" />
+
+<meta property="og:url" content="<?=$config["baseUrl"];if($_SERVER["PHP_SELF"] == "/index.php") { $_SERVER["PHP_SELF"] = ""; }echo str_replace('.php','',$_SERVER['PHP_SELF']);if(!empty($_SERVER["QUERY_STRING"])) { echo "/?" . $_SERVER["QUERY_STRING"]; }?>" />
+<meta property="og:title" content="<?=$lang["HEAD_SUBTITLE"]?> | <?=$lang["HEAD_TITLE"]?>" />
+<meta property="og:description" content="<?=$lang["HEAD_DESCRIPTION"]?>" />
+<meta property="og:image" content="<?=$config["resourceUrl"]?>/favicons/android-chrome-256x256.png" />
+<meta property="og:locale" content="<?=$lang["LOCALE"]?>" />
+<meta property="og:type" content="website" />
+<meta property="fb:app_id" content="<?=$config["fbPublicAppId"]?>" />
+
+<link rel="canonical" href="<?=$config["baseUrl"];
+		if($_SERVER["PHP_SELF"] == "/index.php") { $_SERVER["PHP_SELF"] = ""; } echo str_replace('.php','',$_SERVER['PHP_SELF']);if(!empty($_SERVER["QUERY_STRING"])) { echo "/?" . $_SERVER["QUERY_STRING"];}?>" />
+
+<!-- Favicons -->
+<link rel="apple-touch-icon" sizes="180x180" href="<?=$config["resourceUrl"]?>/favicons/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="<?=$config["resourceUrl"]?>/favicons/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="<?=$config["resourceUrl"]?>/favicons/favicon-16x16.png">
+<link rel="manifest" href="<?=$config["resourceUrl"]?>/site.webmanifest">
+<link rel="mask-icon" href="<?=$config["resourceUrl"]?>/favicons/safari-pinned-tab.svg" color="#5bbad5">
+<meta name="msapplication-TileColor" content="#00aba9">
+<meta name="theme-color" content="#ffffff">
+<!-- Favicons end -->
+
+<script src="<?=$config["resourceUrl"]?>/js/table-sort.js" async></script>
+
+<link rel="stylesheet" type="text/css" href="<?=$config["resourceUrl"]?>/css/bootstrap/bootstrap.min.css">
+<link rel="stylesheet" type="text/css" href="<?=$config["resourceUrl"]?>/css/style.php">
+
+<title><?=(empty($view->get("titleText")) ? $lang["HEAD_SUBTITLE"] : $view->get("titleText"))?> | <?=$lang["HEAD_TITLE"]?></title>
+</head>
+
+<!--googleon: index-->
+<div class="container-fluid main-content">
+	<!-- NAV -->
+	<div class="row">
+		<div class="col">
+			<nav class="navbar navbar-expand-lg navbar-dark">
+				<a class="navbar-brand" style="font-size:28px" href="<?=$config["baseUrl"]?>"><?=$lang["HEAD_BRAND"]?><br /><span class="brand-motto"><?=$lang["HEAD_BRAND_MOTTO"]?></span></a>
+				<button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+					<span class="navbar-toggler-icon"></span>
+				</button>
+				<div class="collapse navbar-collapse ms-4 me-4" id="navbarNav">
+					<ul class="navbar-nav offset-xl-3">
+						<li class="navigable nav-item"><a class="nav-link" href="<?=$config["baseUrl"]?>"><?=$lang["MENU_HOME"]?></a></li>
+						<li class="navigable nav-item"><a class="nav-link" href="<?=$config["baseUrl"]?>/cestovky">Recenze</a></li>
+						<li class="nav-item dropdown">
+							<a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">Informace</a>
+							<ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+
+								<? foreach ($articles as $a) { ?>
+									<li><a class="navigable dropdown-item" href="<?=$config["baseUrl"]?>/<?=$a->url?>"><?=$a->title?></a><div class="dropdown-divider"></div></li>
+								<? } ?>
+								<li><a class="navigable dropdown-item" href="<?=$config["baseUrl"]?>/kontakt">Kontakt</a></li>
+							</ul>
+						</li>
+						<li class="navigable nav-item"><a class="nav-link" href="<?=$config["baseUrl"]?>/archiv">Archiv</a></li>
+					</ul>
+				</div>
+			</nav>
+		</div>
+	</div>
+	<div class="separator-25"></div>
+	<!-- CONTENT -->
+	<div class="row">
+		<div class="col-12 col-lg-8 col-xl-7 offset-lg-0 offset-xl-2">
+			<div class="container" id="main-container">
+
+				<div class="card content row">
+					<div>
+					<? printRequestLog($view->data->get("output")); ?>
+					<?
+					$isArticle = false;
+					if (empty($_GET["route"]))
+						$_GET["route"] = "index";
+					else {
+						if (count($articles) == 0) {
+							$articles = [""];
+						}
+						foreach ($articles as $a) {
+							if ($_GET["route"] == "novy-clanek" || $a->url == $_GET["route"]) {
+								$isArticle = true;
+								include($config["applicationBaseUrl"] . "/views/index/article.phtml");
+								break;
+							}
+						}
+					}
+					if (!$isArticle)
+						include($config["applicationBaseUrl"] . "/views/" . strtolower(get_class($view)) . "/" . $_GET["route"] . ".phtml");
+					?>
+					</div>
+				</div>
+
+
+				<? if(($_SERVER["PHP_SELF"] == "") || ($_SERVER["PHP_SELF"] == "/archiv.php") || ($_SERVER["PHP_SELF"] == "index.php")) { ?>
+
+					<div style="background:transparent;border:0" class="card row content p-0 flex-row">
+
+						<div class="col-12 col-lg-6 ps-0 pe-0 latest-left">
+							<div class="col-12 card content">
+								<span class="h3 card-title">Poslední příspěvky diskuze</span>
+								<hr>
+								<? if (!empty($novePrispevky->prispevky)) { ?>
+								<table class="w-100">
+									<? foreach ($novePrispevky->prispevky as $prispevek) { ?>
+										<tr>
+											<td>
+												<small>
+													<a href="<?=$config["baseUrl"] . '/forum/' . urlencode($prispevek->cestovka)?>"><?=$prispevek->cestovka?></a>
+												</small>
+											</td>
+											<td class="text-end">
+												<small>
+													<?=date("d.m.Y H:i", strtotime($prispevek->pridana))?>
+												</small>
+											</td>
+										</tr>
+									<? } ?>
+								</table>
+								<? } else { ?>
+									<i>Zatím je zde prázdno.</i>
+								<? } ?>
+							</div>
+						</div>
+						<div class="col-12 col-lg-6 pe-0 ps-0 ps-lg-4 latest-right">
+
+							<div class="col-12 card content">
+									<span class="h3 card-title">Poslední recenze</span>
+									<hr>
+									<? if (!empty($novePrispevky) && !empty($novePrispevky->recenze)) {
+										?><table class="w-100"><?
+											foreach ($novePrispevky->recenze as $recenze) {
+												$value = $recenze->final_rating;
+												?><tr>
+													<td><small><a href="<?=$config["baseUrl"] . '/recenze/' . urlencode($recenze->cestovka) . '#recenze-' . $recenze->id?>"><?=$recenze->cestovka?></a></small></td>
+													<td class="text-center align-middle position-relative w-50">
+														<div class="stars position-absolute" style="top:0;right:0;height:20px !important" data-value="<?=$value?>"><span>★</span></div>
+													</td>
+												</tr><?
+
+												if (count($novePrispevky->recenze) > 5 && $recenze == $novePrispevky->recenze[4])
+													break;
+											}
+										?></table><?
+									} else {
+											?><i>Zatím je zde prázdno.</i><?
+									} ?>
+							</div>
+						</div>
+
+
+					</div>
+
+				<? } ?>
+			</div>
+			<div class="container row mx-0 px-0">
+			<div class="col-md-12 card-news content pt-0 d-none d-lg-block" style="text-align:center;margin-bottom:25px !important">
+				<a href="<?=$config["adBannerUrl"]?>" target="_blank"><img alt="<?=$config["adBannerTitle"]?>" class="img-fluid" src="<?=$config["resourceUrl"]?>/images/<?=$config["adBannerFile"]?>"></a>
+			</div></div>
+		</div>
+		<div class="col-12 col-lg-4 col-xl-3 ps-0 right-panels">
+			<div class="card panel">
+			<div class="card-body">
+				<div class="card-text">
+					<a href="<?=$config["baseUrl"]?>/cestovky" class="btn btn-primary d-block text-align-center">Přidat recenzi</a>
+				</div>
+			</div>
+		</div>
+			<!--googleoff: index-->
+			<div class="card panel login">
+				<div class="card-body" style="margin-bottom:10px !important;">
+			<? if ($view->isUserLogged()) { 
+
+					$user = json_decode(json_encode($_SESSION));
+
+				?>
+					<h2 class="card-title h5"><?=strip_tags(htmlspecialchars($user->display_name))?><br />
+					<?if (!isset($_SESSION["fb_logged"]) || !$_SESSION["fb_logged"]) { echo "<small>(" . strip_tags(htmlspecialchars($user->username)) . ")</small>";}?>
+					</h2><div class="dropdown-divider"></div>
+					<div class="card-text">
+						<ul style="padding:0">
+							<? if($view->isUserAdmin()) { ?>
+							<li class="navigable user-li"><a href="<?=$config["baseUrl"]?>/admin">Administrace</a></li>
+							<? } ?>
+							<li class="navigable user-li"><a href="<?=$config["baseUrl"]?>/moje-recenze">Moje recenze</a></li>
+							<li class="navigable user-li"><a href="<?=$config["baseUrl"]?>/nastaveni">Nastavení</a></li>
+							<li class="navigable user-li"><a href="<?=$config["baseUrl"]?>/odhlasit">Odhlásit</a></li>
+						</ul>
+					</div>
+			<? } else { ?>
+					<h2 class="card-title h5"><!--googleoff: index-->Přihlášení<!--googleon: index--></h2><div class="dropdown-divider"></div><br />
+					<div class="card-text">
+						<form method="post" action="<?=$config["baseUrl"]?>/login">
+							<input class="form-control mx-auto" type="text" name="login_username" placeholder="Přezdívka nebo e-mail"><br />
+							<input class="form-control mx-auto" type="password" name="password" placeholder="Přihlasovací heslo"><br />
+							<div style="margin:0 auto;text-align:center;">
+								<?
+								$loginUrl = $view->get("fbLoginUrl");
+								?>
+								<button class="btn btn-primary" name="do_login" style="width:45%;;margin-right:10px">Přihlásit</button>
+								<a href="<?=$config["baseUrl"]?>/registrace" class="btn btn-primary text-decoration-none" style="width:45%;color:white">Registrace</a>
+								<br /><br />
+								<a class="btn btn-block btn-social btn-facebook" href="<?=htmlspecialchars($loginUrl)?>"><span class="fa fa-facebook"></span> Log in with Facebook!</a>
+								<br /><br /><!--googleoff: index--><small><a href="<?=$config["baseUrl"]?>/zapomenute-heslo">Zapomenuté heslo?</a></small><!--googleon: index-->
+							</div>
+						</form>
+					</div>
+			<? } ?>
+				</div>
+			</div>
+
+			<div class="card panel advert">
+				<div class="card-body">
+					<div class="card-text text-center">
+						<a id="adv-switcher" href="<?=$config["adPanelUrl"]?>" target="_blank">
+							<img id="adv-img" alt="<?=$config["adPanelTitle"]?>" src="<?=$config["resourceUrl"]?>/images/<?=$config["adPanelFile"]?>">
+						</a>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+<footer class="footer container row">
+<div class="col-md-8">
+&copy; 2018 - <?=date("Y")?> RecenzeCestovek.cz
+</div>
+<div class="col-md-4" style="line-height:25px">
+<!--googleoff: index-->
+<a href="<?=$config["baseUrl"]?>/pravidla-pouzivani">Pravidla používání</a><br />
+<a href="<?=$config["baseUrl"]?>/ochrana-udaju">Ochrana osobních údajů</a><br />
+<a href="<?=$config["baseUrl"]?>/soubory-cookie">Soubory cookie</a>
+<!--googleon: index-->
+</div>
+<?
+$uri = str_replace('.php','',$_SERVER['PHP_SELF']);
+if($uri == "/index") $uri = "";
+?>
+
+<a href="#">
+	<span class="scheme" id="scheme-red" onclick="changeScheme(1, 0.4);"></span>
+</a>
+<a href="#">
+	<span class="scheme" id="scheme-light" onclick="changeScheme(0, 0.4);"></span>
+</a>
+<style>
+	.bg-darkmaroon{
+		background:#2a0000;
+	}
+	.bg-white{
+		background:#ffffff;
+	}
+</style>
+<script>
+	function changeScheme(s, duration) {
+		if (event !== undefined)
+			event.preventDefault();
+
+		let scheme = s;
+		setCookie("color_scheme", scheme);
+		document.querySelector("nav").style.transition = "background " + duration + "s, border-bottom " + duration + "s";
+		document.querySelector("footer").style.transition = "background " + duration + "s";
+		document.querySelector(".main-content").style.transition = "background " + duration + "s";
+
+		if (scheme == 1) {
+			document.querySelector("nav").style.background = "#3a0101";
+			document.querySelector("nav").style.borderBottom = "2px solid goldenrod";
+			document.querySelector("footer").style.background = "#3a0101";
+			document.querySelector(".main-content").style.background = "#1d0000";
+			let cards = document.querySelectorAll(".card");
+			for (let i = 0; i < cards.length; ++i) {
+				if (cards[i].style.background.includes("transparent"))
+					continue;
+				cards[i].style.transition = "all " + duration + "s";
+				cards[i].style.color = "white";
+				cards[i].classList.remove("bg-white");
+				cards[i].classList.add("bg-darkmaroon");
+			}
+		} else {
+			document.querySelector("nav").style.background = "#5c1010";
+			document.querySelector("nav").style.borderBottom = "2px solid transparent";
+			document.querySelector("footer").style.background = "#5c1010";
+			document.querySelector(".main-content").style.background = "#f1f1f1";
+			let cards = document.querySelectorAll(".card");
+			for (let i = 0; i < cards.length; ++i) {
+				if (cards[i].style.background.includes("transparent"))
+					continue;
+				cards[i].style.transition = "all " + duration + "s";
+				cards[i].style.color = "maroon";
+				cards[i].classList.add("bg-white");
+				cards[i].classList.remove("bg-darkmaroon");
+			}
+		}
+
+		return true;
+	}
+
+	window.addEventListener("DOMContentLoaded", () => {
+
+		let scheme = getCookie("color_scheme");
+
+		if (scheme != 0 && scheme != 1)
+			scheme = 0;
+
+		changeScheme(scheme, 0);
+	});
+</script>
+</footer>
+<button id="topPage" class="topPage btn btn-secondary" onclick="window.scrollTo({top: 0, behavior: 'smooth'});"><i class="fa fa-arrow-up"></i></button>
+
+<script src="<?=$config["resourceUrl"]?>/js/star-rating.js"></script>
+<script src="<?=$config["resourceUrl"]?>/js/bootstrap/bootstrap.bundle.min.js" async></script>
+<script src="<?=$config["resourceUrl"]?>/js/cookies.js"></script>
+
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=<?=$config["googleAnalytics"]?>"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', '<?=$config["googleAnalytics"]?>');
+</script>
+
+<script src="<?=$config["resourceUrl"]?>/js/main.js"></script>
+<script>
+
+	function comparePath(path, index) {
+		if (index === undefined)
+			index = -1;
+
+		if (window.location.pathname.includes("/recenze") && path.includes("/cestovky"))
+			return true;
+
+		if (window.location.pathname.includes("/archiv") && path.includes("/archiv"))
+			return true;
+
+<? if ($view->isUserAdmin()) { ?>
+		if (window.location.pathname.includes("/admin") && path.includes("/admin"))
+			return true;
+
+<? } ?>
+		return (path.includes(window.location.pathname) || window.location.pathname.includes(path)) && (window.location.pathname.length <= 1 && index == 0 || window.location.pathname.length > 1);
+	}
+</script>
+<div id="cookie-law"></div>
+
+</html>
+
+<?
+$_SESSION["lasturl"] = str_replace('.php','',$_SERVER['PHP_SELF']);
+if($_SESSION["lasturl"] == "/index") $_SESSION["lasturl"] = "";
+$_SESSION["QUERY_STRING"] = $_SERVER["QUERY_STRING"];
+?>

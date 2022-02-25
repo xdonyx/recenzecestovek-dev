@@ -1,0 +1,105 @@
+<h3>Detail IP</h3>
+<form action="<?=$config["baseUrl"]?>/admin/lookup">
+	<input class="form-control" type="text" name="ip" placeholder="Zadejte IP" value="<?=(isset($_GET["ip"]) ? $_GET["ip"] : "")?>">
+	<br />
+	<button class="btn btn-secondary">Vyhledat</button>
+</form><br /><hr /><br />
+
+<?
+	if (!empty($_GET["ip"])) {
+
+
+		$ip = strip_tags(htmlspecialchars($_GET["ip"]));
+		$lookup = $view->get("lookup_detail");
+
+		?>
+		<h1>Detail IP <?=$ip?></h1>
+		<hr>
+		<h3>Uživatelé s IP <i><?=$ip?></i></h3>
+		<?
+		if (count($lookup->uzivatele) > 0) {
+			foreach ($lookup->uzivatele as $uzivatel) {
+				echo " • " . $uzivatel->username . "<br />";
+			}
+		} else {
+			echo "Žádné výsledky";
+		}
+		?><br /><hr /><br />
+		<h3>Příspěvky z IP <i><?=$ip?></i></h3>
+		<?
+		if (count($lookup->recenze)) {
+
+			foreach ($lookup->recenze as $recenze) {
+
+				if (!empty($recenze->display_name))
+					$recenze->username .= " (" . $recenze->display_name . ")";
+
+				if (!empty($recenze->guest_name))
+					$recenze->guest_name .=  " (" . $recenze->guest_email . ")";
+				?>
+				<div class="card" style="border:1px solid grey">
+					<div class="card-body">
+					<? if (!empty($recenze->username)) { ?>
+					Uživatel: <strong><?=$recenze->username?></strong><br />
+					<? } else { ?>
+					<strong><i>Host:</i> <?=$recenze->guest_name?></strong><br />
+					<? } ?>
+					Cestovka: <strong><?=$recenze->nazev?></strong><br />
+					Odkaz: <strong><a href="<?=$config["baseUrl"]?>/recenze/<?=urlencode($recenze->nazev)?>#recenze-<?=$recenze->recenze_id?>"><?=$config["baseUrl"]?>/recenze/<?=urlencode($recenze->nazev)?>#recenze-<?=$recenze->recenze_id?></a></strong><br />
+					IP z registrace: <strong><?=$recenze->user_ip?></strong><br />
+					IP recenze: <strong><?=$recenze->recenze_ip?></strong><br />
+					Text: <strong><?=$recenze->content?></strong><br />
+					<? if ($recenze->stav_id == ContentStatus::Deleted) { ?>
+						<br /><span style="color:red;font-weight:bold;font-style:italic"> * Recenze je v koši * </span>
+					<? } ?>
+					<? if ($recenze->stav_id == ContentStatus::Confirm) { ?>
+						<br /><span style="color:green;font-weight:bold;font-style:italic"> * Recenze ještě neni potvrzena * </span>
+					<? } ?>
+					</div>
+				</div>
+			<? }
+		} else {
+			echo "Žádné výsledky";
+		}
+
+		return;
+	}
+?>
+<h3>Uživatelé s rovnakou IP</h3>
+<br />
+<?
+$lookup = $view->get("lookup");
+
+if (count($lookup) > 0) { ?>
+
+	<div class="table-responsive">
+		<table class="table table-light table-hover align-middle">
+			<thead>
+				<tr>
+					<th class="sortable" onclick="sortTable(this)">ID <i class="fa fa-arrow-up"></i></th>
+					<th class="sortable" onclick="sortTable(this)">Uživatel <i class="fa fa-arrow-up"></i></th>
+					<th class="sortable" onclick="sortTable(this)">E-mail <i class="fa fa-arrow-up"></i></th>
+					<th class="sortable" onclick="sortTable(this)">IP <i class="fa fa-arrow-up"></i></th>
+				</tr>
+				</thead>
+				<tbody style="border-top:0">
+
+				<? foreach ($lookup as $l) { ?>
+				<tr>
+					<td><?=$l->id?></td>
+					<td><?=$l->username?></td>
+					<td><?=$l->email?></td>
+					<td><a href="./lookup?ip=<?=$l->ip?>"><?=$l->ip?></a></td>
+				</tr>
+
+				<? } ?>
+			</tbody>
+		</table>
+		<script>
+			sortTable(3);
+		</script>
+	</div><br />
+
+<? } else { ?>
+	Nebyly nalezeny žádné výsledky<br />
+<? } ?>

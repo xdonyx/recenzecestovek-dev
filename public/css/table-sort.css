@@ -1,0 +1,7 @@
+.sortable{
+	white-space:nowrap;
+	cursor:pointer;
+}
+.sortable i{
+	font-size:16px !important;
+}

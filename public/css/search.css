@@ -1,0 +1,6 @@
+#searchResults a{
+	text-decoration:none;
+}
+#searchResults a:hover{
+	text-decoration:underline;
+}

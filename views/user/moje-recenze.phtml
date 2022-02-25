@@ -1,0 +1,44 @@
+<?php
+
+$recenze = $view->get("output");
+
+if (isset($recenze->errors)) {
+	return;
+}
+?>
+
+<h1>Seznam Vašich recenzí</h1>
+<br />
+<? if(count($recenze) == 0) {
+	?>Zatím nemáte žádné recenze.<?
+} else {
+	?>Počet výsledků: <?=count($recenze)?><br /><br />
+
+	<div class="table-responsive">
+		<table class="table table-light table-hover align-middle">
+			<thead>
+				<tr>
+					<th class="sortable" onclick="sortTable(this)">Datum <i class="fa fa-arrow-up"></i></th>
+					<th class="sortable" onclick="sortTable(this)">Cestovka <i class="fa fa-arrow-up"></i></th>
+					<th class="sortable" onclick="sortTable(this)">Průměrné hodnocení <i class="fa fa-arrow-up"></i></th>
+					<th class="sortable" onclick="sortTable(this)">Ukázka <i class="fa fa-arrow-up"></i></th>
+				</tr>
+				</thead>
+				<tbody style="border-top:0">
+				<? foreach ($recenze as $r) { ?>
+				<tr>
+					<td><?=date("d.m.Y h:i",strtotime($r->add_date))?></td>
+					<td><a href="<?=$config["baseUrl"]?>/recenze/<?=urlencode($r->nazev_ck)?>#recenze-<?=$r->id?>"><?=$r->nazev_ck?></a></td>
+					<td><div class="stars" data-value="<?=$r->rating_final?>"></div></td>
+					<td><?=strip_tags(htmlspecialchars(trimContent($r->content, 30))) . (strlen($r->content) > 30 ? "..." : "")?></td>
+				</tr>
+
+				<? } ?>
+			</tbody>
+		</table>
+		<script>
+			sortTable(0);
+			sortTable(0);
+		</script>
+	</div>
+<? }

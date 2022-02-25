@@ -1,0 +1,19 @@
+<?
+$request = new Data($_POST);
+if (empty($view->get("output")->errors)) {
+	$request = new Data();
+}
+?>
+<h1>Kontaktní formulář</h1>
+<br />
+<h2 style="font-size:24px">Zde nás můžete kontaktovat</h2>
+<br />
+<form action="/kontakt" method="post">
+	<input class="form-control" name="email" type="email" placeholder="Zadejte Váš e-mail" value="<?=$request->get("email")?>" /><br />
+	<input class="form-control" name="subject" type="text" placeholder="Předmět zprávy" value="<?=$request->get("subject")?>" /><br />
+	<textarea style="height:150px" class="form-control" name="content" placeholder="Text zprávy..."><?=$request->get("content")?></textarea><br />
+	<div tabindex="1" class="g-recaptcha" data-sitekey="<?=$config["googleCaptchaPublicKey"]?>"></div><br />
+	<button name="submit" class="btn btn-primary">Odeslat</button>
+</form>
+
+<script src='https://www.google.com/recaptcha/api.js?hl=cs' async></script>

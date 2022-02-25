@@ -1,0 +1,29 @@
+<? 
+$username = (isset($_POST["login_username"]) ? $_POST["login_username"] : "");
+
+$result = $view->data->get("output");
+
+if ($view->isUserLogged()) {
+	$result->success = ["Přihlášení úspěšné"];
+	printRequestLog($result);
+	?><br /><a href="<?=$config["baseUrl"]?>">Přejít na hlavní stránku</a><?
+	return;
+}
+?>
+
+<h1>Přihlášení</h1>
+<pre></pre>
+
+Zde zadejte Vaše přihlasovací jméno nebo e-mail. a heslo zadané pri registraci.
+<pre></pre>
+Přihlášení jedním kliknutím:<pre></pre>
+<a href="<?=htmlspecialchars($view->get("fbLoginUrl"))?>" class="btn btn-block btn-social btn-facebook loginfb" style="width:30%;"><span class="fa fa-facebook"></span> Log in with Facebook!</a><pre></pre>
+<form name="login" method="post" action="/login"><br />
+	<input class="form-control" tabindex="0" type="text" name="login_username" placeholder="Přezdívka nebo e-mail" value="<?=$username?>" /><br /><br />
+	<input class="form-control" tabindex="0" type="password" name="password" placeholder="Přihlasovací heslo"/><br /><br />
+	<button tabindex="0" name="do_login" class="btn btn-primary">Přihlásit</button>
+</form>
+<pre></pre>
+<pre></pre>
+<a href="<?=$config["baseUrl"]?>/aktivacni-email">Nepřišel Vám aktivační e-mail?</a><pre></pre>
+<a href="<?=$config["baseUrl"]?>/registrace">Nemáte účet? Nevadí! Registrace je rychlá a jednoduchá!</a>

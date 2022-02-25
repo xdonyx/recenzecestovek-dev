@@ -1,0 +1,33 @@
+/*---------- 
+star rating 
+----------*/
+
+.stars{
+	font-size:20px !important;
+	display:inline-block;
+}
+
+.stars:not(.stars-input) {
+	font-size:20px;
+	unicode-bidi:bidi-override;
+	-webkit-touch-callout: none;
+	-moz-user-select: none;
+	-khtml-user-select: none; 
+	user-select: none;
+	-webkit-user-select: none;
+	-ms-user-select: none;
+}
+
+.stars-large {
+	font-size:30px !important;
+	margin-bottom:10px;
+}
+
+.stars span {
+	vertical-align:top;
+	color:black;
+}
+
+.stars-input {
+	cursor:pointer;
+}

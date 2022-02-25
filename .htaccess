@@ -1,0 +1,85 @@
+Options -MultiViews
+
+<IfModule mod_deflate.c>
+	AddOutputFilterByType DEFLATE application/javascript
+	AddOutputFilterByType DEFLATE application/rss+xml
+	AddOutputFilterByType DEFLATE application/vnd.ms-fontobject
+	AddOutputFilterByType DEFLATE application/x-font
+	AddOutputFilterByType DEFLATE application/x-font-opentype
+	AddOutputFilterByType DEFLATE application/x-font-otf
+	AddOutputFilterByType DEFLATE application/x-font-truetype
+	AddOutputFilterByType DEFLATE application/x-font-ttf
+	AddOutputFilterByType DEFLATE application/x-javascript
+	AddOutputFilterByType DEFLATE application/xhtml+xml
+	AddOutputFilterByType DEFLATE application/xml
+	AddOutputFilterByType DEFLATE font/opentype
+	AddOutputFilterByType DEFLATE font/otf
+	AddOutputFilterByType DEFLATE font/ttf
+	AddOutputFilterByType DEFLATE image/svg+xml
+	AddOutputFilterByType DEFLATE image/x-icon
+	AddOutputFilterByType DEFLATE text/css
+	AddOutputFilterByType DEFLATE text/html
+	AddOutputFilterByType DEFLATE text/javascript
+	AddOutputFilterByType DEFLATE text/plain
+	AddOutputFilterByType DEFLATE text/xml
+</IfModule>
+
+<IfModule mod_expires.c>
+    # WEEK
+    <FilesMatch "\.(jpg|jpeg|png|gif|swf)$">
+        Header set Cache-Control "max-age=604800, public"
+    </FilesMatch>
+
+    # WEEK
+    <FilesMatch "\.(js|css|swf)$">
+        Header set Cache-Control "max-age=604800"
+    </FilesMatch>
+</IfModule>
+
+RewriteEngine On
+RewriteBase /
+
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.*)/$ /$1 [L,R] # <- for test, for prod use [L,R=301]
+
+
+#First rewrite any request to the wrong domain to use the correct one (here www.)
+#RewriteCond %{HTTP_HOST} !^www\.
+#RewriteRule ^(.*)$ https://www.%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+#Now, rewrite to HTTPS:
+#RewriteCond %{HTTPS} off
+#RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+RewriteRule ^aktivacni-email/(.*)$ /index.php?route=aktivacni-email&token=$1 [QSA,L]
+RewriteRule ^aktivacni-email?(.*)$ /index.php?route=aktivacni-email& [QSA,L]
+
+RewriteRule ^aktivace/(.*)$ /index.php?route=aktivace&token=$1 [QSA,L]
+RewriteRule ^aktivace?(.*)$ /index.php?route=aktivace& [QSA,L]
+
+RewriteRule ^zapomenute-heslo/(.*)$ /index.php?route=zapomenute-heslo&token=$1 [QSA,L]
+RewriteRule ^zapomenute-heslo?(.*)$ /index.php?route=zapomenute-heslo& [QSA,L]
+
+RewriteRule ^admin/(.*)$ /index.php?route=admin&subview=$1 [QSA,L]
+RewriteRule ^admin\?(.*)$ /index.php?route=admin&$1 [QSA,L]
+
+RewriteRule ^recenze/(.*)$ /index.php?route=recenze&ck=$1 [QSA,L]
+RewriteRule ^recenze/(.*)/(.*)$ /index.php?route=recenze&ck=$1&$2 [QSA,L]
+
+RewriteRule ^forum/(.*)$ /index.php?route=diskuze&ck=$1 [QSA,L]
+RewriteRule ^forum/(.*)/(.*)$ /index.php?route=diskuze&ck=$1&$2 [QSA,L]
+
+RewriteRule ^archiv/(.*)$ /index.php?route=archiv&detail=$1 [QSA,L]
+RewriteRule ^archiv?(.*)$ /index.php?route=archiv&$1 [QSA,L]
+RewriteRule ^archiv/(.*)/(.*)$ /index.php?route=archiv&detail=$1&$2 [QSA,L]
+
+RewriteRule ^cestovky/hledej/(.*)$ /index.php?route=cestovky&hledej=$1 [QSA,L]
+RewriteRule ^cestovky/hledej(.*)$ /index.php?route=cestovky&hledej=$1 [QSA,L]
+
+RewriteRule ^(.*)/(.*)$ /index.php?route$1&$2 [QSA,L]
+RewriteRule $^ /index.php?route=index [QSA,L]
+
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+#RewriteRule ^([^\.]+)$ index.php?route=$1 [NC,L]
+RewriteRule ^([^\.]+)?(.*)$ /index.php?route=$1 [NC,L]

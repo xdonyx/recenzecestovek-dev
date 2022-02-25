@@ -1,0 +1,88 @@
+<h1>Nastavení</h1>
+<br />
+<?
+$request = new Data($_POST);
+
+if (!empty($view->get("result")->success)) {
+	// flush inputs on success
+	echo var_dump($request);
+	$request->flush();
+}
+
+printRequestLog($view->get("result"));
+?>
+<form method="post" class="form-group" action="<?=$config["baseUrl"]?>/nastaveni">
+	<div class="container">
+		<div class="row">
+			<div class="col-md-4">
+				<h2 class="h5">Zobrazované jméno</h2>
+				<br />
+				<input class="form-control" type="text" value="<?=strip_tags(htmlspecialchars($_SESSION["display_name"]))?>" disabled />
+				<label><small>Zobrazované jméno</small></label>
+				<input class="form-control" type="text" name="display_name_new" id="display_name_new" value="<?=$request->get("display_name_new")?>" />
+				<label for="display_name_new"><small>Nové zobrazované jméno</small></label>
+				<br />
+				<br />
+			</div>
+			<div class="col-md-4">
+				<h2 class="h5">E-mail</h2>
+				<br />
+				<? if(!empty($_SESSION["email"])) { ?>
+				<input class="form-control" type="text" value="<?=strip_tags(htmlspecialchars(generateSafeMail($_SESSION["email"])))?>" disabled />
+				<label><small>E-mail (bezpečné zobrazení)</small></label>
+				<br />
+				<input class="form-control" type="email" name="email_current" id="email" value="<?=$request->get("email_current")?>" autocomplete="off" />
+				<label for="email"><small>Zadejte aktuální e-mail</small></label>
+				<br />
+				<? } ?>
+				<input class="form-control" type="email" name="email_new" id="email_new" value="<?=$request->get("email_new")?>" autocomplete="off" />
+				<label for="email_new"><small>Nový e-mail</small></label>
+				<input class="form-control" type="email" name="email_check" id="email_check" value="<?=$request->get("email_check")?>" autocomplete="off" />
+				<label for="email_check"><small>Nový e-mail znovu</small></label>
+				<br />
+				<br />
+			</div>
+			<div class="col-md-4">
+				<h2 class="h5">Změna hesla</h2>
+				<br />
+				<? if (!empty($_SESSION["fb_id"])) { ?>
+					Nastavení hesla zpravuje Facebook
+				<? } else { ?>
+					<input class="form-control" type="password" name="password_current" id="password_current" autocomplete="off" />
+					<label for="password_current"><small>Aktuální heslo</small></label>
+					<br />
+					<input class="form-control" type="password" name="password_new" id="password_new" autocomplete="off" />
+					<label for="password_new"><small>Nové heslo</small></label>
+					<br />
+					<input class="form-control" type="password" name="password_check" id="password_check" autocomplete="off" />
+					<label for="password_check"><small>Nové heslo znovu</small></label>
+				<? } ?>
+				<br />
+				<br />
+			</div>
+		</div>
+		<hr />
+		<div class="row">
+			<div class="col-md-6">
+				<h2 class="h5">Upozornění na nové reakce</h2>
+				<br />
+				<small>Přejete si e-mailem dostávat upozornění na nové reakce na Vaše recenze?</small><br />
+				<input class="radio-inline" type="radio" name="reply_notif" id="reply_notif_on" value="1"<?
+				if(isset($_SESSION["reply_notif"]) && $_SESSION["reply_notif"] == 1) { ?> checked="checked" <? } 
+				?>>
+				<label for="reply_notif_on"><small>Ano</small></label>
+				<input class="radio-inline" type="radio" name="reply_notif" id="reply_notif_off" value="0"<?
+				if(!isset($_SESSION["reply_notif"]) || $_SESSION["reply_notif"] == 0) { ?> checked="checked" <? } 
+				?>>
+				<label for="reply_notif_off"><small>Ne</small></label>
+				<br />
+			</div>
+		</div>
+		<hr />
+		<div class="row">
+			<div class="col-md-12">
+				<button class="btn btn-primary" name="action" value="update" id="save">Uložit změny</button><br />
+			</div>
+		</div>
+	</div>
+</form>

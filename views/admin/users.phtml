@@ -1,0 +1,138 @@
+<h3>Seznam uživatelů</h3>
+<hr>
+<?
+$_GET["sort"] = "asc";
+$users = $view->get("users");
+?>
+<div id="request-output" class="alert mb-0" style="display:none"></div>
+<br />
+<? if(count($users) > 0) { ?>
+
+	<div class="table-responsive">
+		<table class="table table-light table-hover align-middle">
+			<thead>
+				<tr>
+					<th class="sortable" onclick="sortTable(this)">Role</th>
+					<th class="sortable" onclick="sortTable(this)">Uživatel <i class="fa fa-arrow-up"></i></th>
+					<th class="sortable" onclick="sortTable(this)">Jméno <i class="fa fa-arrow-up"></i></th>
+					<th class="sortable" onclick="sortTable(this)">IP <i class="fa fa-arrow-up"></i></th>
+					<th class="sortable" onclick="sortTable(this)">E-mail <i class="fa fa-arrow-up"></i></th>
+					<th class="sortable" onclick="sortTable(this)">Datum registrace <i class="fa fa-arrow-up"></i></th>
+					<th class="sortable" onclick="sortTable(this)">Aktivován <i class="fa fa-arrow-up"></i></th>
+					<th class="sortable" onclick="sortTable(this)">Admin <i class="fa fa-arrow-up"></i></th>
+				</tr>
+				</thead>
+				<tbody style="border-top:0">
+
+				<? foreach ($users as $user) {
+
+					$adminOut = "fa-user text-primary";
+					if ($user->is_admin) {
+						$adminOut = "fa-user-secret text-danger";
+					}
+					$user->registration_date = date("d.m.Y H:i", strtotime($user->registration_date));
+				?>
+				<tr<?=($_SESSION["id"] == $user->id ? " style=\"font-weight:bold\"" : "")?>>
+					<td class="text-center"><i class="fa <?=$adminOut?>" style="font-size:22px"></i></td>
+					<td><?=$user->username?></td>
+					<td><?=$user->display_name?></td>
+					<td><a href='<?=$config["baseUrl"]?>/admin/lookup?ip=<?=$user->ip?>'><?=$user->ip?></a></td>
+					<td><?=$user->email?></td>
+					<td><?=$user->registration_date?></td>
+					<td><i style="color:maroon;font-size:24px" class="ms-4 fa fa-<?=($user->activated == 1 ? "check" : "times")?>"></i></td>
+					<td>
+						<div class="d-inline ms-2" style="cursor:pointer" data-value="<?=$user->is_admin?>" onclick="updateValue(<?=$user->id?>, 'set_admin', this);">
+							<i style="color:maroon" class="fa fa-toggle-<?=($user->is_admin == 1 ? "on" : "off")?>"></i>
+						</div>
+					</td>
+				</tr>
+
+				<? } ?>
+			</tbody>
+		</table>
+		<script>
+			sortTable(5);
+			sortTable(5);
+		</script>
+
+		<script>
+
+			let outputResetTimeout = null;
+			function updateValue(id, action, el) {
+
+				if (outputResetTimeout != null) {
+					window.clearTimeout(outputResetTimeout); 
+					outputResetTimeout = null;
+				}
+
+				if (!confirm("Potvrzení změny prav uživatele\r\n\r\n\t" + el.parentElement.parentElement.children[1].innerText))
+					return;
+
+				let output = document.getElementById("request-output");
+				output.innerHTML = "Načítám...";
+
+				var request = new XMLHttpRequest();
+
+				var value = 1;
+				if (el.getAttribute("data-value") == 1)
+					value = 0;
+
+				el.setAttribute("data-value", value);
+				request.onreadystatechange = function() {
+					if (this.readyState == 4 && this.status == 200) {
+						let response = JSON.parse(this.responseText);
+						let responseOutput = "";
+
+						if (response.errors != undefined) {
+							for (var i = 0; i < response.errors.length; ++i) {
+								responseOutput += "" + response.errors[i] + "<br />";
+							}
+							output.classList.add("alert-danger");
+							output.classList.remove("alert-success");
+							output.style.display = "block";
+
+						} else {
+							updateElement(el);
+							for (var i = 0; i < response.success.length; ++i) {
+								responseOutput += "" + response.success[i] + "<br />";
+							}
+							output.classList.add("alert-success");
+							output.classList.remove("alert-danger");
+							output.style.display = "block";
+						}
+
+						output.innerHTML = responseOutput;
+					}
+				}
+
+				request.open("GET","<?=$config["baseUrl"]?>/admin_users_callback.php?user_id=" + id + "&action=" + action + "&value=" + value, true);
+				request.send();
+			}
+
+			function updateElement(el) {
+
+				let firstEl = el.parentElement.parentElement.children[0].children[0];
+
+				if (el.getAttribute("data-value") == 1) {
+					el.children[0].classList.add("fa-toggle-on");
+					el.children[0].classList.remove("fa-toggle-off");
+
+					firstEl.classList.remove("fa-user");
+					firstEl.classList.add("fa-user-secret");
+					firstEl.classList.remove("text-primary");
+					firstEl.classList.add("text-danger");
+				} else {
+					el.children[0].classList.add("fa-toggle-off");
+					el.children[0].classList.remove("fa-toggle-on");
+
+					firstEl.classList.remove("fa-user-secret");
+					firstEl.classList.add("fa-user");
+					firstEl.classList.add("text-primary");
+					firstEl.classList.remove("text-danger");
+				}
+			}
+
+		</script>
+	</div>
+
+<? } ?>

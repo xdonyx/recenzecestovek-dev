@@ -1,0 +1,8 @@
+<h1>Znovuzaslání aktivačního e-mailu</h1>
+<br />
+<form method="post" action="aktivacni-email">
+	<input class="form-control" type="email" name="email" placeholder="Zadejte e-mail z registrace" /><br />
+	<div tabindex="1" class="g-recaptcha" data-sitekey="<?=$config["googleCaptchaPublicKey"]?>"></div><br />
+	<button class="btn btn-primary" name="submit">Odeslat</button>
+</form>
+<script src="https://www.google.com/recaptcha/api.js?hl=<?=$lang["CODE"]?>" async></script>

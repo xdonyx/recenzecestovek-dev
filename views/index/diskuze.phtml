@@ -1,0 +1,135 @@
+<?
+
+$ck = $view->data->get("ck_data_basic");
+?>
+<span class="text-normal">Diskuze cestovní kanceláře</span>
+<br /><br />
+<h1><?=$ck->nazev?></h1>
+<br />
+<a href="<?=$config["baseUrl"]?>/recenze/<?=urlencode($ck->nazev)?>" class="btn btn-secondary text-white text-decoration-none">Zobrazit recenze</a>
+
+<? if ($ck->prispevky_povoleny) { ?> <div class="btn btn-success" onclick="showForm()">Nový příspěvek</div><br /><? } ?>
+<br />
+<? if ($ck->prispevky_povoleny) { ?>
+<form id="newPostForm" action="<?=$config["baseUrl"]?>/forum/<?=urlencode($ck->nazev)?>" method="post">
+<? if (!$view->isUserLogged()) { ?>
+	<input class="form-control" type="text" name="guest_name" placeholder="Vaše jméno"><br />
+	<input class="form-control" type="email" name="guest_email" placeholder="Váš e-mail"><br />
+<? } ?>
+
+	<textarea class="form-control" name="content" placeholder="Text příspěvku..."></textarea><br />
+
+<? if (!$view->isUserLogged()) { ?>
+	<div tabindex="1" class="g-recaptcha" data-sitekey="<?=$config["googleCaptchaPublicKey"]?>"></div><br />
+<? } ?>
+
+	<button name="action" value="add" class="btn btn-primary">Přidat příspěvek</button><br />
+</form>
+<hr />
+
+<? } else { ?>
+	<br /><div class="alert alert-warning"><i>Diskuze pro tuto cestovku byla uzamčena.</i></div>
+<? } ?>
+
+<br />
+<style>
+	#newPostForm{
+		display:none;
+	}
+	#searchResults .card{
+		margin-bottom:15px !important;
+	}
+</style>
+<div id="searchResults">
+</div>
+<style>
+	@keyframes rotation{
+		from{
+			transform:rotate(0deg);
+		}
+		to{
+			transform:rotate(359deg);
+		}
+	}
+	#loadingIcon .fa{
+		animation: rotation 1.5s infinite linear;
+	}
+</style>
+<div id="loadingIcon" class="text-center" style="display:none">
+	<i class="fa fa-refresh"></i>
+</div>
+<br />
+<div class="d-block text-center">
+	<div id="actionButton" class="btn btn-primary" onclick="getSearchResults(++currentPage)"><small>Načíst starší příspěvky</small></div>
+</div>
+
+<script>
+
+	function showDiskuzeEditForm(el) {
+
+		var forms = document.querySelectorAll(".edit-prispevek-form");
+		var contents = document.querySelectorAll(".prispevek-content");
+
+		let id = Array.from(document.querySelectorAll(".edit-button")).indexOf(el)
+
+		for(var i = 0; i < forms.length; i++) {
+			if (i == id && forms[i].style.display == "none") {
+				forms[i].style.display = "block";
+				contents[i].style.display = "none";
+			} else {
+				forms[i].style.display = "none";
+				contents[i].style.display = "block";
+			}
+		}
+	}
+
+	function showForm() {
+		let form = document.querySelector("#newPostForm");
+		if (form.style.display != "block") {
+			form.style.display = "block";
+		} else {
+			form.style.display = "none";
+		}
+	}
+
+	var reachedEnd = false;
+	var currentPage = 1;
+	function getSearchResults(value) {
+
+		if (reachedEnd == true)
+			return;
+
+		var request = new XMLHttpRequest();
+
+		document.querySelector("#loadingIcon").style.display = "block";
+
+		request.onreadystatechange = function() {
+			if (this.readyState == 4 && this.status == 200) {
+
+				document.querySelector("#loadingIcon").style.display = "none";
+
+				let results = document.getElementById("searchResults");
+				if (this.responseText == "0") {
+					results.innerHTML += "<div class=\"d-block text-center\"><i>Zatím nikdo nenapsal do diskuze cestovky <?=$ck->nazev?></i></div>";
+					reachedEnd = true;
+				} else if (this.responseText == "1") {
+					results.innerHTML += "<div class=\"d-block text-center\"><i>Konec výsledků</i></div>";
+					reachedEnd = true;
+				} else {
+					results.innerHTML += this.responseText;
+				}
+			}
+
+			if (reachedEnd) {
+				document.getElementById("actionButton").classList.add("d-none");
+			}
+		}
+
+		request.open("GET","<?=$config["baseUrl"]?>/forum_callback.php?ck_id=<?=$ck->id?>&ck_nazev=<?=$ck->nazev?>&page=" + value, true);
+		request.send();
+	}
+
+	getSearchResults(currentPage);
+</script>
+
+<script src='https://www.google.com/recaptcha/api.js?hl=<?=$lang["CODE"]?>' async></script>

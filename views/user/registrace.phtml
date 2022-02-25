@@ -1,0 +1,28 @@
+<?
+$reg_data = $view->get("output");
+?>
+<h1>Registrace</h1>
+<br />
+Registrace není povinna pro přidání recenze - ovšem k recenzi nemůžete přidat fotky a samotnou recenzi musí potvrdit administrátor. Registrovaní uživatelé si taky můžou nechat posílat nové recenze jejich oblíbených (nebo neoblíbených) cestovek. Pokud chcete přidávat recenze bez omezení, registrovat se můžete zde.
+<br />
+<div>
+<br />
+<span class="d-block mb-2">Registrace a přihlášení jedním kliknutím:</span>
+<? $post = new Data($_POST); ?>
+<a href="<?=$view->data->get("fbLoginUrl")?>" class="btn btn-block btn-social btn-facebook loginfb"><span class="fa fa-facebook"></span> Log in with Facebook!</a><br />
+<br /><a href="<?=$config["baseUrl"]?>/aktivacni-email">Nepřišel Vám aktivační e-mail?</a><form name="register" method="post" action="/registrace"><br />
+	<input required class="form-control" tabindex="0" type="text" name="username" placeholder="Přihlašovací jméno" value="<?=$post->get("username")?>" /><small class="padding-left:10px"> Zadejte jméno kterým se budete přihlasovat.</small><br /><br />
+	<input required class="form-control" tabindex="0" type="text" name="display_name" placeholder="Zobrazované jméno" value="<?=$post->get("display_name")?>" /><small class="padding-left:10px"> Zadejte jméno které se bude zobrazovat u Vašich příspěvků.</small><br /><br />
+	<input required class="form-control" tabindex="0" type="email" name="email" placeholder="E-mail" value="<?=$post->get("email")?>" /><small class="padding-left:10px"> E-mailová adresa pro zaslání aktivačního odkazu.</small><br /><br />
+	<input required class="form-control" tabindex="0" type="email" name="email_check" placeholder="E-mail kontrola" /><small class="padding-left:10px"> Kontrola e-mailu.</small><br /><br />
+	<input required class="form-control" tabindex="0" type="password" name="password" placeholder="Přihlasovací heslo" /><small class="padding-left:10px"> Doporučujeme si zvolit <a tabindex="1" href="<?=$config["baseUrl"]?>/silna-hesla" target="_blank">silné heslo</a> v náhodné kombinaci písmen, znaků a čísel.</small><br /><br />
+	<input required class="form-control" tabindex="0" type="password" name="password_check" placeholder="Přihlasovací heslo kontrola" /><small class="padding-left:10px"> Kontrola hesla.</small><br /><br />
+	<div tabindex="1" class="g-recaptcha" data-sitekey="<?=$config["googleCaptchaPublicKey"]?>"></div><br />
+	<button tabindex="0" name="do_register" class="btn btn-primary">Potvrdit registraci</button>
+</form>
+<br />
+<br />
+Registrací vyjádřujete souhlas s <a href="<?=$config["baseUrl"]?>/pravidla-pouzivani" target="_blank">pravidly používání</a> a se <a href="<?=$config["baseUrl"]?>/ochrana-udaju" target="_blank">Zásadami ochrany osobních údajů</a>.
+</div>
+
+<script src='https://www.google.com/recaptcha/api.js?hl=<?=$lang["CODE"]?>' async></script>

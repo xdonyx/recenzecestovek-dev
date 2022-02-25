@@ -1,0 +1,276 @@
+<?php
+$ck = $view->data->get("ck_data");
+
+if (isset($view->data->get("output")->errors) && isset($_POST["action"]) && $_POST["action"] == "add_recenze") { ?>
+	<script>
+		window.addEventListener("DOMContentLoaded", (event) => {
+     		newRecenze();
+		});
+	</script>
+<? } ?>
+
+<span class="text-normal">Recenze cestovní kanceláře</span><br /><br />
+<h1><?=$ck->nazev?></h1>
+<? if(count($ck->recenze) > 0) {
+	$ck->prumerne_hodnoceni = round($ck->prumerne_hodnoceni, 0); ?>
+	Průměrné hodnocení<br />
+	<div class="stars stars-large" data-value="<?=$ck->prumerne_hodnoceni?>"><span>★</span></div>
+<? } ?>
+<br />
+<!-- FB share -->
+<a class="btn btn-primary btn-facebook p-1" style="color:white" href="https://www.facebook.com/sharer/sharer.php?u=<?=$config["baseUrl"] . "/" . $ck->nazev?>" target="_blank">
+	<small><i class="fa fa-facebook ms-1 me-3"></i><span class="me-2">Sdílet</span></small>
+</a>
+<!-- FB share -->
+
+<? if ($ck->recenze_povoleny) { ?>
+
+		<? if ($view->isUserLogged()) { ?>
+			<?
+			$subscribed = $view->get("user_subscribed");
+
+			$subscribeText = "Upozornit na nový obsah";
+			$action = "subscribe";
+			$btn = "btn-warning text-dark";
+			if($subscribed == true) {
+				$subscribeText = "Zrušit odběr";
+				$action = "unsubscribe";
+				$btn = "btn-danger text-white";
+			}
+			?>
+			<form class="d-inline" action="<?=$config["baseUrl"] . '/recenze/' . urlencode($ck->nazev)?>" method="post">
+				<button name="action" value="<?=$action?>" href="&action=<?=$action?>" style="text-decoration:none" class="btn <?=$btn?> p-1"><small><?=$subscribeText?></small></button>
+			</form>
+		<? } ?>
+<? } ?>
+		<br /><br />
+
+		<a href="<?=$config["baseUrl"]?>/forum/<?=urlencode($ck->nazev)?>" class="btn btn-secondary text-white text-decoration-none">Zobrazit diskuzi</a>
+
+<? if ($ck->recenze_povoleny) { ?>
+
+		<button class="btn btn-success" onclick="showForm()">Nová recenze</button>
+
+		<div id="newRecenzeForm" style="display:none;">
+			<br />
+
+			<?
+				$content = new stdClass();
+
+				if (isset($view->data->get("output")->errors) && isset($_POST["action"]) && $_POST["action"] == "add_recenze")
+					$content = json_decode(json_encode($_POST));
+
+				$view->printRecenzeForm("/recenze/" . urlencode($ck->nazev), "add_recenze", "Přidat recenzi", "Text recenze...", $content);
+			?>
+		</div>
+<? } else { ?>
+	<br /><br /><div class="alert alert-warning"><i>Tahle cestovka je momentálně neaktivní a není možné přidat nové recenze.</i></div>
+<? } ?>
+<br /><br /><small><i>Upozornění: Příspěvky uveřejněné v recenzích vyjadřují názory zákazníků cestovních kanceláří a agentur, nikoliv redakce serveru RecenzeCestovek.cz, která za jejich obsah nenese zodpovědnost.</i></small><br /><br />
+
+<?
+$num_recenzi = -1;
+if (isset($ck->recenze)) {
+
+	foreach ($ck->recenze as $recenze) {
+		++$num_recenzi;
+		$rating = ceil(($recenze->rating_profesionalita + $recenze->rating_delegat + $recenze->rating_informace + $recenze->rating_doprava) / 4);
+
+		$format = " | " . date("d.m.Y H:i", strtotime($recenze->add_date));
+		if($view->isUserAdmin() == true) {
+			$format .= " (IP: " . $recenze->ip . ")";
+		}
+	?>
+		<div class="card" id="recenze-<?=$recenze->id?>" style="border:1px solid maroon">
+			<div class="card-header">
+				<div class="container-fluid row px-3">
+					<div class="col-12 col-lg-auto ps-0">
+						<div class="stars stars-recenze" data-value="<?=$rating?>"><span>★</span></div>
+					</div>
+					<div class="col">
+						<div class="d-inline-block" style="line-height: 30px;vertical-align:middle"><strong><?=strip_tags(htmlspecialchars($recenze->uzivatel))?></strong><?=$format?></div>
+					</div>
+				</div>
+			</div>
+			<div class="card-body">
+				<div class="card-text" style="white-space:pre-wrap !important"><?=strip_tags(htmlspecialchars($recenze->content))?></div>
+				<hr>
+				<div class="container-fluid text-center">
+					<div class="row">
+						<div class="col-6 col-lg-3 text-nowrap"><?=$lang["RATING_PROFESIONALITA"]?><br /><div class="stars" data-value="<?=$recenze->rating_profesionalita?>"><span>★</span></div></div>
+						<div class="col-6 col-lg-3 text-nowrap"><?=$lang["RATING_DELEGAT"]?><br /><div class="stars" data-value="<?=$recenze->rating_delegat?>"><span>★</span></div></div>
+						<div class="col-6 col-lg-3 text-nowrap"><?=$lang["RATING_INFORMACE"]?><br /><div class="stars" data-value="<?=$recenze->rating_informace?>"><span>★</span></div></div>
+						<div class="col-6 col-lg-3 text-nowrap"><?=$lang["RATING_DOPRAVA"]?><br /><div class="stars" data-value="<?=$recenze->rating_doprava?>"><span>★</span></div></div>
+					</div>
+					<div class="row">
+						<div class="col-12 mt-5">
+							<strong><?=$lang["RATING_FINAL"]?></strong><div class="stars d-block" data-value="<?=$rating?>"><span>★</span></div>
+						</div>
+					</div>
+				</div>
+				<? 
+					$fileExists1 = !empty($recenze->img_url_1) && file_exists($recenze->img_url_1);
+					$fileExists2 = !empty($recenze->img_url_2) && file_exists($recenze->img_url_2);
+
+					if ($recenze->img_url_1 == $recenze->img_url_2)
+					{
+						$fileExists2 = false;
+					}
+
+					if ($fileExists1 || $fileExists2) { ?>
+					<br />
+					<hr />
+					<div class="h5 ml-5">Příloha</div>
+					<div class="text-center">
+						<br />
+						<? if($fileExists1) { ?>
+							<a target="_blank" href="<?=$config["baseUrl"]?>/<?=$recenze->img_url_1?>"><img class="recenze-priloha" src="<?=$config["baseUrl"]?>/<?=$recenze->img_url_1?>"></a>
+						<? } ?>
+						<? if($fileExists2) { ?>
+							<a target="_blank" href="<?=$config["baseUrl"]?>/<?=$recenze->img_url_2?>"><img class="recenze-priloha" src="<?=$config["baseUrl"]?>/<?=$recenze->img_url_2?>"></a>
+						<? } ?>
+						<br />
+					</div>
+					<br />
+				<? } ?>
+
+				<? if ($view->isUserLogged()) { ?>
+					<hr />
+					<div class="text-center">
+						<? if ($view->isUserAdmin() || $_SESSION["id"] == $recenze->user_id) { ?>
+							<form method="post" action="<?=$config["baseUrl"]?>/recenze/<?=urlencode($ck->nazev)?>" class="d-inline">
+								<input type="hidden" name="recenze_id" value="<?=$recenze->id?>">
+								<button name="action" value="delete_recenze" class="btn btn-danger" onclick="return confirm('Skutečně smazat recenzi?');"><i class="fa fa-trash"></i></button>
+							</form>
+						<? } ?>
+						<? if ($view->isUserAdmin() || $_SESSION["id"] == $recenze->user_id) { ?>
+							<div class="btn btn-primary" onclick="showEditForm(<?=$num_recenzi?>)"><i class="fa fa-edit"></i></div>
+						<? } ?>
+						<? if ($view->isUserLogged() && $ck->recenze_povoleny) { ?>
+							<div style="color:white;text-decoration:none" class="btn btn-secondary" onclick="showCommentForm(<?=$num_recenzi?>)"><i class="fa fa-reply"></i></div>
+						<? } ?>
+					</div>
+				<? } ?>
+			</div>
+
+
+
+
+			<? if ($view->isUserLogged()) { ?>
+
+				<? if ($view->isUserAdmin() || $_SESSION["id"] == $recenze->user_id) { ?>
+					<div style="display:none" class="container edit-recenze-form">
+						<div class="h4">Upravit recenzi</div>
+						<? $view->printRecenzeForm("/recenze/" . urlencode($ck->nazev), "edit_recenze", "Upravit recenzi", "Text recenze...", $recenze); ?>
+					</div>
+				<? } ?>
+
+				<form style="display:none" class="comment-form container" method="post" action="/recenze/<?=urlencode($ck->nazev)?>">
+   					<fieldset disabled="disabled" class="row m-0 pb-3 align-items-center">
+						<input type="hidden" name="recenze_id" value="<?=$recenze->id?>">
+						<div class="col-2">
+							<button name="action" value="add_reakce" style="" class="btn btn-primary pull-right"><i class="fa fa-paper-plane"></i></button>
+						</div>
+						<div class="col-10">
+							<textarea class="form-control d-inline" placeholder="Text reakce..." name="content"></textarea><br />
+						</div>
+    				</fieldset>
+				</form>
+
+			<? } ?>
+
+			<?
+
+			$komentare = false;
+			if (!empty($recenze->komentare)) {
+				$komentare = true;
+			}
+			?>
+			<? if ($komentare) { ?>
+			
+			<div class="card-footer">
+				<small class="d-block p-2">Reakce na recenzi uživatele <?=strip_tags(htmlspecialchars($recenze->uzivatel))?></small>
+
+				<?	$index = 0; ?>
+				<? foreach ($recenze->komentare as $komentar) { ?>
+					<? $komentar->cas_pridani = date("d.m.Y H:i", strtotime($komentar->add_date)); ?>
+						<? ++$index; ?>
+							<hr>
+							<div class="d-block text-start">
+								<div class="container-fluid row p-2">
+									<div class="col-10">
+										<span class="align-middle">
+											<strong><?=strip_tags(htmlspecialchars($komentar->uzivatel))?></strong> | <?=$komentar->cas_pridani?>
+											<? if ($view->isUserAdmin()) { ?> | IP: <?=$komentar->ip?><? } ?>
+										</span>
+									</div>
+									<div class="col-2 text-right">
+										<? if ($view->isUserAdmin() || ($view->isUserLogged() && $_SESSION["id"] == $komentar->user_id)) { ?>
+											<form method="post" action="<?=$config["baseUrl"]?>/recenze/<?=urlencode($ck->nazev)?>">
+												<input type="hidden" name="reakce_id" value="<?=$komentar->id?>">
+												<button name="action" value="delete_reakce" class="d-inline btn btn-danger float-end" onclick="return confirm('Skutečně smazat reakci?');"><i class="fa fa-trash"></i></button>
+											</form>
+										<? } ?>
+									</div>
+							<div class="card-text"><?=strip_tags(htmlspecialchars($komentar->content))?></div>
+								</div>
+						</div>
+				<? } ?>
+			</div>
+			<? } ?>
+		</div>
+	<? }
+} else {
+	?><div class="alert alert-warning"><i>Zatím nikdo nepřidal recenzi pro cestovku <?=$ck->nazev?></i></div><?
+} ?>
+
+<script>
+
+function showForm(){
+
+	var rForm = document.getElementById("newRecenzeForm");
+
+	if (rForm.style.display != "block"){
+		rForm.style.display = "block";
+	} else {
+		rForm.style.display = "none";
+	}
+}
+
+function showCommentForm(id) {
+
+	var forms = document.querySelectorAll(".comment-form");
+	var eforms = document.querySelectorAll(".edit-recenze-form");
+
+	for(var i = 0; i < forms.length; i++) {
+		if (i == id && forms[i].style.display == "none") {
+			forms[i].style.display = "block";
+			forms[i].querySelector("fieldset").disabled = false;
+
+			if (eforms[i].style.display == "block")
+				showEditForm(i);
+		} else {
+			forms[i].style.display = "none";
+			forms[i].querySelector("fieldset").disabled = true;
+		}
+	}
+}
+
+function showEditForm(id) {
+
+	var cforms = document.querySelectorAll(".comment-form");
+	var forms = document.querySelectorAll(".edit-recenze-form");
+
+	for(var i = 0; i < forms.length; i++) {
+		if (i == id && forms[i].style.display == "none") {
+			forms[i].style.display = "block";
+
+			if (cforms[i].style.display == "block")
+				showCommentForm(i);
+		} else {
+			forms[i].style.display = "none";
+		}
+	}
+}
+</script>
+<script src='https://www.google.com/recaptcha/api.js?hl=<?=$lang["CODE"]?>' async></script>

@@ -1,0 +1,17 @@
+<h1>Zapomenuté heslo</h1>
+<br />
+<? if (!isset($_GET["token"])) { ?>
+<form method="post" action="<?=$config["baseUrl"]?>/zapomenute-heslo">
+	<input class="form-control" type="email" name="email" placeholder="Zadejte e-mail z registrace" /><br />
+	<div class="g-recaptcha" data-sitekey="<?=$config["googleCaptchaPublicKey"]?>"></div><br />
+	<button class="btn btn-primary" name="action" value="password_reset">Odeslat</button>
+</form>
+
+<script src='https://www.google.com/recaptcha/api.js?hl=<?=$lang["CODE"]?>' async></script>
+<? } else { ?>
+<form method="post" action="<?=$config["baseUrl"]?>/zapomenute-heslo?token=<?=(!empty($_GET["token"]) ? $_GET["token"] : "")?>">
+	<input class="form-control" type="password" name="password_new" placeholder="Zadejte nové heslo" /><br />
+	<input class="form-control" type="password" name="password_check" placeholder="Heslo znovu" /><br /><br />
+	<button class="btn btn-primary" name="action" value="do_password_reset">Odeslat</button>
+</form>
+<? } ?>

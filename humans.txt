@@ -1,0 +1,25 @@
+----------------------------
+----------------------------
+---- RecenzeCestovek.cz ----
+----      (c) 2018      ----
+----------------------------
+----------------------------
+
+Created by
+
+	Martin Lukáčik (martin.lukacik@me.com)
+
+----------------------------
+
+Developed with
+
+	Bootstrap 5
+	FontAwesome 4
+	Quill.js
+	PHPMailer
+
+----------------------------
+
+Powered by
+
+	PHP

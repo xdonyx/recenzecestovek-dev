@@ -1,0 +1,52 @@
+<h1>Seznam cestovek</h1>
+<br/>
+
+<input id="searchInput" type="text" class="form-control" style="max-width:100% !important" oninput="getSearchResults(this.value)" placeholder="Zadejte název cestovky" value="<?=(isset($_GET["hledej"]) ? $_GET["hledej"] : "")?>">
+<br />
+<div id="searchResults">
+	<? foreach ($view->get("cestovkySearch") as $ck) { ?>
+		<div onmouseenter="showDiskuzeButton(this);" onmouseleave="hideDiskuzeButton(this);" class="result-row mb-2">
+			<a href="<?=$config["baseUrl"]?>/forum/<?=urlencode($ck->nazev)?>" class="btn btn-secondary invisible text-light me-2" title="Diskuze"><small><i class="fa fa-comments"></i></small></a>
+			<a class="d-inline-block h5" href="<?=$config["baseUrl"]?>/recenze/<?=urlencode($ck->nazev)?>"><?=$ck->nazev?></a><br />
+		</div>
+	<? } ?>
+	<div id="noResults" style="display:none"><i>Žádné výsledky</i></div>
+</div>
+<br />
+<script>
+	function getSearchResults(value) {
+
+		let results = document.getElementsByClassName("result-row");
+		let visibleResults = 0;
+
+		value = value.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+
+		for (let i = 0; i < results.length; ++i) {
+			let resultText = results[i].innerText.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+
+			if (resultText.includes(value)) {
+				results[i].style.display = "block";
+				++visibleResults;
+			} else {
+				results[i].style.display = "none";
+			}
+		}
+
+		if (visibleResults == 0) {
+			document.getElementById("noResults").style.display = "block";
+		} else {
+			document.getElementById("noResults").style.display = "none";
+		}
+	}
+
+	function showDiskuzeButton(el) {
+		el.children[0].classList.remove("invisible");
+	}
+	function hideDiskuzeButton(el) {
+		el.children[0].classList.add("invisible");
+	}
+		
+</script>
+<br />
+<hr />
+Nenašli jste hledanou cestovku? Kontaktujte nás <a href="<?=$config["baseUrl"]?>/kontakt">zde</a> a my ji přidáme!

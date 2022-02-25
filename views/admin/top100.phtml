@@ -1,0 +1,37 @@
+<h3>Nejlepší cestovky</h3>
+<br />
+<?
+$top100 = $view->get("top100");
+
+if (count($top100) > 0) { ?>
+
+	<div class="table-responsive">
+		<table class="table table-light table-hover align-middle">
+			<thead>
+				<tr>
+					<th class="sortable" onclick="sortTable(this)"># <i class="fa fa-arrow-up"></i></th>
+					<th class="sortable" onclick="sortTable(this)">Cestovka <i class="fa fa-arrow-up"></i></th>
+					<th class="sortable" onclick="sortTable(this)">Průměrné hodnocení <i class="fa fa-arrow-up"></i></th>
+					<th class="sortable" onclick="sortTable(this)">Recenze <i class="fa fa-arrow-up"></i></th>
+				</tr>
+				</thead>
+				<tbody style="border-top:0">
+
+				<? foreach ($top100 as $key => $ck) { ?>
+				<tr>
+					<td><?=($key + 1)?></td>
+					<td><a href="<?=$config["baseUrl"]?>/recenze/<?=urlencode($ck->nazev)?>"><?=$ck->nazev?></a></td>
+					<td><div class="stars" data-value="<?=round($ck->prumerne_hodnoceni)?>"></div></td>
+					<td><?=$ck->pocet_recenzi?></td>
+				</tr>
+
+				<? } ?>
+			</tbody>
+		</table>
+		<script>
+			sortTable(0);
+		</script>
+	</div>
+<? } else { ?>
+
+<? } ?>

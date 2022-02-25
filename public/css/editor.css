@@ -1,0 +1,29 @@
+#articleContent li, #editor li{
+	margin-bottom:10px;
+}
+#editor{
+	min-height:400px;
+	font-family:var(--bs-body-font-family);
+}
+.main-content p {
+	margin-bottom:10px;
+}
+.ql-toolbar{
+	position:sticky;
+	top:60px;
+	z-index:1;
+	background:#f1f1f1;
+}
+.toolbar-main{
+	display:block;
+	height:61px;
+	position:sticky;
+	top:-1px;
+	z-index:999;
+	background-color:white;
+	margin-bottom:1px;
+	padding:10px;
+}
+.ql-align{
+	margin-top:-5px;
+}

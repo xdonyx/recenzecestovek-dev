@@ -1,0 +1,206 @@
+<?php
+
+$article = $view->get("article");
+$isAddForm = false;
+if (empty($article->id)) {
+	$action = "add";
+	$icon = "fa-plus";
+
+	$article = (object) [
+		"id" => 0,
+		"title" => "",
+		"title_full" => "",
+		"content" => "",
+		"edit_date" => null,
+	];
+
+	$isAddForm = true;
+
+}
+
+$article->edit_date = date("d.m.Y H:i", strtotime($article->edit_date));
+
+$titleOut = (!empty($article->title_full) ? $article->title_full : $article->title);
+
+?>
+
+<? if ($view->isUserAdmin()) { ?>
+
+<link href="<?=$config["resourceUrl"]?>/css/quill/quill.custom.css" rel="stylesheet">
+
+<form class="d-inline" style="width:100% !important" method="post" action="<?=$config["baseUrl"]?>/<?=$_REQUEST["route"]?>">
+
+	<input type="hidden" name="article_id" value="<?=$article->id?>">
+	<div class="toolbar-main">
+	<? if (!$isAddForm) { ?>
+		<div onclick="showEditForm()" class="btn btn-primary me-2"><i class="fa fa-edit"></i></div>
+		<button onclick="return saveEditForm();" name="action" value="edit" class="btn btn-success me-2"><i class="fa fa-floppy-o"></i></button>
+	<? } else { ?>
+		<button onclick="return saveEditForm();" name="action" value="add" class="btn btn-success me-2">Přidat článek</button>
+	<? } ?>
+	</div>
+	<div id="articleEditForm" style="display:none;">
+		<div class="row">
+			<div class="col-12 col-lg-6">
+				<small>Celý nadpis (nepovinné)</small>
+				<input class="form-control" type="text" name="article_title_full"  value="<?=$article->title_full?>" placeholder="Celý nadpis" style="max-width:100% !important">
+			</div>
+			<div class="col-12 col-lg-3">
+				<small>Nadpis</small>
+				<input id="input" class="form-control" type="text" name="article_title" oninput="translateToUrl(this.value, true)" value="<?=$article->title?>" placeholder="Nadpis" style="max-width:100% !important"><br />
+			</div>
+			<div class="col-12 col-lg-3">
+				<small>Ukázka odkazu</small>
+				<input id="output" class="form-control" type="text" disabled="disabled" value="Začněte psát nadpis..." style="max-width:100% !important"><br />
+			</div>
+		</div>
+	</div>
+
+	<textarea name="content" id="editor-textarea" class="d-none"></textarea>
+	<div id="editor-container" style="display:none">
+		<div id="editor" onclick="updateToolbar()"><?=$article->content?></div>
+	</div>
+
+<? } ?>
+
+<div id="articleContent">
+	<h1>
+		<div class="d-inline-block align-middle"><?=$titleOut?></div>
+	</h1>
+	<br />
+	<?=$article->content?>
+	<hr />
+	<div class="d-block text-end"><i>Naposledy upraveno <?=$article->edit_date?></i></div>
+</div>
+
+<? if ($view->isUserAdmin()) { ?>
+
+</form>
+
+<script>
+	window.addEventListener("DOMContentLoaded", () => {
+		let el = document.querySelector("#input");
+		translateToUrl(el.value, false);
+	});
+</script>
+<script src="<?=$config["resourceUrl"]?>/js/quill/quill.js"></script>
+
+<script>
+
+	function translateToUrl(str, warn) {
+		let el = document.querySelector("#output");
+		el.value = str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replaceAll(" ", "-").toLowerCase();
+		<? if (!$isAddForm) { ?>
+			if (warn)
+				showWarning("Upozornění!\r\n\r\nZměna tohoto pole způsobí, že některé odkazy přestanou fungovat"); 
+		<? } ?>
+	}
+
+	let seenWarning = false;
+
+	function showWarning(message) {
+		if (seenWarning)
+			return;
+		
+		alert(message);
+		seenWarning = true;
+	}
+
+	let toolbarHeight = null;
+	window.addEventListener("DOMContentLoaded", () => {
+		let toolbar = document.querySelector("#editor-container .ql-toolbar");
+
+		if (toolbarHeight == null) {
+			let container = document.querySelector("#editor-container");
+			let display = container.style.display;
+			container.style.display = "block";
+			toolbarHeight = toolbar.getBoundingClientRect().height;
+			container.style.display = display;
+		}
+
+	});
+
+	function updateToolbar() {
+
+		if (toolbarHeight == null)
+			return;
+
+		let toolbar = document.querySelector("#editor-container .ql-toolbar");
+		
+		toolbar.style.height = toolbarHeight + "px";
+	}
+
+	var toolbarOptions = [
+
+	/*	[{ 'header': [1, 2, 3, 4, 5, 6, false] }],
+
+		['bold', 'italic', 'underline', 'strike'],        // toggled buttons
+		['blockquote'],
+
+		[{ 'list': 'ordered'}, { 'list': 'bullet' }],
+		[{ 'script': 'sub'}, { 'script': 'super' }],      // superscript/subscript
+		[{ 'indent': '-1'}, { 'indent': '+1' }],          // outdent/indent
+
+		[{ 'color': [] }, { 'background': [] }],          // dropdown with defaults from theme
+		[{ 'font': [] }],
+		[{ 'align': [] }],
+
+		['clean']                                         // remove formatting button
+		,*/
+
+		  [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
+          [ 'bold', 'italic', 'underline', 'strike' ],
+          [{ 'color': [] }, { 'background': [] }],
+          [{ 'script': 'super' }, { 'script': 'sub' }],
+          [{ 'list': 'ordered' }, { 'list': 'bullet'}, { 'indent': '-1' }, { 'indent': '+1' }],
+          [{ 'align': [] }],
+          [ 'link', 'image', 'video', 'formula' ],
+          [ 'clean' ]
+	];
+	var quill = new Quill('#editor', {
+		theme: 'snow',
+
+		modules: {
+			toolbar: toolbarOptions,
+			'history': {          // Enable with custom configurations
+			'delay': 2500,
+			'userOnly': true
+		},
+		}
+	});
+
+	function saveEditForm() {
+		let editor = document.getElementById("editor");
+		let editorTextarea = document.getElementById("editor-textarea");
+
+		if (/\S/.test(quill.root.innerText))
+			editorTextarea.value = quill.root.innerHTML;
+
+		return 1;//confirm("Uložit změny?");
+	}
+
+	let articleFormVisible = false;
+	var showEditForm = function () {
+		let articleForm = document.getElementById("articleEditForm");
+		let editor = document.getElementById("editor-container");
+		let articleContent = document.getElementById("articleContent");
+		articleFormVisible = !articleFormVisible;
+
+		if (articleFormVisible) {
+			articleForm.style.display = "inline";
+			editor.style.display = "block";
+			articleContent.style.display = "none";
+		} else {
+			articleForm.style.display = "none";
+			editor.style.display = "none";
+			articleContent.style.display = "block";
+		}
+	}
+
+	<? if ($isAddForm) { ?>
+		showEditForm();
+		showEditForm = function () {};
+	<? } ?>
+</script>
+
+<? } ?>

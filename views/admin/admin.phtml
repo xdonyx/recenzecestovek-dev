@@ -1,0 +1,21 @@
+<?
+$result = $view->get("admin_header");
+$potvrdit = "Recenze (" . $result->pocet_potvrdit . ")";
+?>
+<div>
+	<h1>Admin Panel</h1><i><?=$result->pocet_recenzi?> recenzí (<?=$result->pocet_kos?> koš) | <?=$result->aktivnich_ck?> aktivních cestovek (<?=$result->neaktivnich_ck?> neaktivních) | <?=$result->pocet_uzivatelu?> uživatelů</i>
+	<br />
+	<div class="tab">
+		<? createMenuItem("Cestovky",			"/cestovky"); ?>
+		<? createMenuItem($potvrdit,			"/recenze"); ?>
+		<? createMenuItem("Vymazané příspěvky",	"/diskuze"); ?>
+		<? createMenuItem("Uživatelé",			"/users"); ?>
+		<? createMenuItem("Banlist",			"/banlist"); ?>
+		<? createMenuItem("IP adresy",			"/lookup"); ?>
+		<? createMenuItem("TOP 100",			"/top100"); ?>
+		<? createMenuItem("Články",				"/articles"); ?>
+	</div>
+</div>
+<br />
+<br />
+<div><? include ($_GET["subview"] . ".phtml"); ?></div>

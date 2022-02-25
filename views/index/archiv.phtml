@@ -1,0 +1,33 @@
+<?php
+$cestovky = $this->get("cestovky");
+$recenze = $this->get("recenze");
+
+$cestovky->latest = date("d.m.Y", strtotime($cestovky->latest));
+$cestovky->oldest = date("d.m.Y", strtotime($cestovky->oldest));
+?><h1>Archiv recenzí <br /><?=$cestovky->oldest?> - <?=$cestovky->latest?></h1><br /><?
+
+foreach ($cestovky->cestovky as $i => $ck) {
+
+	if($i > 0) {
+		echo " • "; 
+	}
+
+	 ?><a style="font-size:20px" href="<?=$config["baseUrl"]?>/archiv/<?=urlencode($ck->nazev)?>"><?=$ck->nazev?></a>
+
+<? } ?>
+
+<hr>
+<? if (isset($_GET["detail"])) { ?>
+
+	<h2 class='h3'>Archiv recenzí cestovky <?=urldecode($_GET["detail"])?></h2><br />
+
+	<? if (!empty($recenze)) {
+		foreach ($recenze as $r) {
+			$r->comment_date = date("d.m.Y", strtotime($r->comment_date));
+			 ?><div class="card" style="border:1px solid grey">
+			 	<div class="card-body">Přidal/a <strong><?=$r->comment_author?></strong> dne <?=$r->comment_date?><br /><hr><?=$r->comment_content?></div>
+			 </div><?
+		}
+	}
+}
+?>

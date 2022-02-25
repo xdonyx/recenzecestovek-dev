@@ -1,0 +1,143 @@
+<?
+$result = $view->get("cestovky");
+?><h3>Cestovky</h3><br />
+
+<h4>Vytvořit novou cestovku</h4>
+<form method="post" action="/admin/cestovky">
+	<input class="form-control" type="text" placeholder="Název CK" name="nazev" id="nazev" />
+	<label for="nazev"><small>Název cestovky</small></label><br />
+	<br />
+	<button class="btn btn-info" name="action" value="add_cestovka">Přidat CK</button>
+</form>
+<br /><hr />
+
+<div id="request-output" class="alert mb-0" style="opacity:0;transition:opacity 0.25s ease-out"></div>
+<?
+if(count($result) > 0)
+{
+	?><br /><?=count($result)?> cestovek<br />
+	<br />
+	<div class="table-responsive">
+		<table class="table table-light table-hover align-middle">
+			<thead>
+				<tr>
+					<th class="sortable" onclick="sortTable(this)">ID <i class="fa fa-arrow-up"></i></th>
+					<th class="sortable" onclick="sortTable(this)">Cestovka <i class="fa fa-arrow-up"></i></th>
+					<th class="sortable" onclick="sortTable(this)">Recenze <i class="fa fa-arrow-up"></i></th>
+					<th class="sortable" onclick="sortTable(this)">Diskuze <i class="fa fa-arrow-up"></i></th>
+					<th class="sortable" onclick="sortTable(this)">Archiv <i class="fa fa-arrow-up"></i></th>
+					<th>Akce</th>
+				</tr>
+				</thead>
+				<tbody style="border-top:0">
+
+				<? foreach ($result as $ck) { ?>
+				<tr>
+					<td><?=$ck->id?></td>
+					<td><?=$ck->nazev?></td>
+					<td>
+						<div class="d-inline ms-3" style="cursor:pointer;color:maroon" data-value="<?=$ck->recenze_povoleny?>" onclick="updateValue(<?=$ck->id?>, '', this);">
+							<i class="fa fa-toggle-<?=($ck->recenze_povoleny == 1 ? "on" : "off")?>"></i>
+						</div>
+					</td>
+					<td>
+						<div class="d-inline ms-3 text-success" style="cursor:pointer" data-value="<?=$ck->prispevky_povoleny?>" onclick="updateValue(<?=$ck->id?>, 'prispevky', this);">
+							<i class="fa fa-toggle-<?=($ck->prispevky_povoleny == 1 ? "on" : "off")?>"></i>
+						</div>
+					</td>
+					<td>
+						<div class="d-inline ms-2 text-primary" style="cursor:pointer" data-value="<?=$ck->archiv_viditelny?>" onclick="updateValue(<?=$ck->id?>, 'archiv', this);">
+							<i class="fa fa-toggle-<?=($ck->archiv_viditelny == 1 ? "on" : "off")?>"></i>
+						</div>
+					</td>
+					<td>
+						<form class="form-inline" method="post" action="/admin/cestovky">
+							<input type="hidden" name="ck_id" value="<?=$ck->id?>">
+							<button name="action" value="delete_cestovka" onclick="return confirm('Skutečne smazat cestovku \'<?=$ck->nazev?>\'?\r\n\r\n\tVymažou se taky všechny recenze, komentáře, diskuse a přílohy\r\n\r\n\t!!! AKCE JE NEZVRATNÁ !!!\r\n\r\n')" class="btn btn-danger"><i class="fa fa-trash"></i></button>
+						</form>
+					</td>
+				</tr>
+
+				<? } ?>
+			</tbody>
+		</table>
+
+		<script>
+
+			sortTable(1);
+
+		</script>
+	</div>
+	<br />
+<? } else { ?>
+	Nebyly nalezeny žádné cestovky<br />
+<? } ?>
+
+<script>
+
+	let outputResetTimeout = null;
+	function updateValue(id, action, el) {
+
+		if (outputResetTimeout != null) {
+			window.clearTimeout(outputResetTimeout); 
+			outputResetTimeout = null;
+		}
+
+		let output = document.getElementById("request-output");
+		output.style.opacity = 0;
+
+		var request = new XMLHttpRequest();
+
+		var value = 1;
+		if (el.getAttribute("data-value") == 1)
+			value = 0;
+
+		el.setAttribute("data-value", value);
+
+		request.onreadystatechange = function() {
+			if (this.readyState == 4 && this.status == 200) {
+
+				let response = JSON.parse(this.responseText);
+				let responseOutput = "";
+
+				if (response.errors != undefined) {
+					for (var i = 0; i < response.errors.length; ++i) {
+						responseOutput += "" + response.errors[i] + "<br />";
+					}
+					output.classList.add("alert-danger");
+					output.classList.remove("alert-success");
+					output.style.opacity = 1;
+
+				} else {
+					updateElement(el);
+					for (var i = 0; i < response.success.length; ++i) {
+						responseOutput += "" + response.success[i] + "<br />";
+					}
+					output.classList.add("alert-success");
+					output.classList.remove("alert-danger");
+					output.style.opacity = 1;
+				}
+
+				outputResetTimeout = setTimeout(() => {
+					output.style.opacity = 0;
+				}, 3500);
+
+				output.innerHTML = responseOutput;
+			}
+		}
+
+		request.open("GET","<?=$config["baseUrl"]?>/admin_cestovky_callback.php?ck_id=" + id + "&action=" + action + "&value=" + value, true);
+		request.send();
+	}
+
+	function updateElement(el) {
+		if (el.getAttribute("data-value") == 1) {
+			el.children[0].classList.add("fa-toggle-on");
+			el.children[0].classList.remove("fa-toggle-off");
+		} else {
+			el.children[0].classList.add("fa-toggle-off");
+			el.children[0].classList.remove("fa-toggle-on");
+		}
+	}
+
+</script>

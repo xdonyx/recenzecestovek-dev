@@ -1,0 +1,67 @@
+<h3>Smazané příspěvky</h3>
+<br />
+<?
+foreach ($view->get("prispevky") as $i => $r) { 
+	$date = date("d.m.Y H:i", strtotime($r->add_date));
+
+	if (!empty($r->display_name)) {
+		$r->username = $r->display_name;
+	}
+
+	if (!empty($r->guest_name)) {
+		$r->username = "Host <b>" . $r->guest_name . "</b> (" . $r->guest_email . ")";
+	} else {
+		if (!empty($r->email)) {
+			$r->email = " (" . $r->email . ")";
+		}
+		$r->username = "Uživatel <b>" . $r->username . "</b>" . $r->email;
+	}
+
+	?><div class="card" style="border:1px solid grey">
+		<div class="card-body">
+			<?=$r->username?> | CK: <strong><?=$r->nazev?></strong> | Datum: <?=$date?>
+			<hr />
+			<div class="p-0"><?=$r->content?></div>
+
+			<hr />
+			<div class="text-center">
+				<form method="post" action="<?=$config["baseUrl"]?>/admin/diskuze" class="d-inline">
+					<input type="hidden" name="prispevek_id" value="<?=$r->id?>">
+					<button name="action" value="delete_prispevek_permanent" class="btn btn-danger" onclick="return confirm('Skutečně navždy vymazat příspěvek?\r\n\r\n\t!!! AKCE JE NEZVRATNÁ !!!');"><i class="fa fa-eraser"></i></button>
+				</form>
+				<div class="btn btn-primary" onclick="showEditForm(<?=$i?>)"><i class="fa fa-edit"></i></div>
+				<? if ($_POST["status"] != ContentStatus::OK) { ?>
+				<form method="post" action="<?=$config["baseUrl"]?>/admin/diskuze" class="d-inline">
+					<input type="hidden" name="prispevek_id" value="<?=$r->id?>">
+					<button name="action" value="confirm" class="btn btn-success"><i class="fa fa-check"></i></button>
+				</form>
+				<? } ?>
+			</div>
+
+			<div style="display:none" class="container edit-recenze-form">
+				<div class="h4">Upravit příspěvek</div>
+				<form method="post" action="<?=$config["baseUrl"]?>/forum/<?=urlencode($r->nazev)?>" class="d-inline">
+					<input type="hidden" name="prispevek_id" value="<?=$r->id?>">
+					<textarea class="form-control" name="content"><?=$r->content?></textarea><br />
+					<button name="action" value="edit" class="btn btn-primary">Upravit příspěvek</button>
+				</form>
+			</div>
+		</div>
+	</div>
+<? } ?>
+
+<? if (count($view->get("prispevky")) == 0) { echo "Žádné výsledky"; } ?>
+<script>
+	function showEditForm(id) {
+
+		var forms = document.querySelectorAll(".edit-recenze-form");
+
+		for(var i = 0; i < forms.length; i++) {
+			if (i == id && forms[i].style.display == "none") {
+				forms[i].style.display = "block";
+			} else {
+				forms[i].style.display = "none";
+			}
+		}
+	}
+</script>

@@ -1,0 +1,102 @@
+<?
+$recenze = $view->get("recenze");
+
+$selected = [
+	($_POST["status"] == ContentStatus::Confirm ? " selected" : ""),
+	($_POST["status"] == ContentStatus::Deleted ? " selected" : ""),
+	($_POST["status"] == ContentStatus::OK ? " selected" : ""),
+];
+
+$header = $view->get("admin_header");
+$kos = $header->pocet_kos;
+$potvrdit = $header->pocet_potvrdit;
+$verejne = $header->pocet_recenzi;
+?>
+
+<h3>Recenze</h3>
+<form action="<?=$config["baseUrl"]?>/admin/recenze" method="post">
+	<select class="form-select" style="width:auto;font-weight:600;font-size:20px" name="status" onchange="this.form.submit()">
+		<option value="<?=ContentStatus::Confirm?>"<?=$selected[0]?>>Na potvrzení (<?=$potvrdit?>)</option>
+		<option value="<?=ContentStatus::Deleted?>"<?=$selected[1]?>>Koš (<?=$kos?>)</option>
+		<option value="<?=ContentStatus::OK?>"<?=$selected[2]?>>Veřejné (<?=$verejne?>)</option>
+	</select>
+</form>
+<br />
+<hr />
+<br />
+<?
+foreach ($recenze as $i => $r) { 
+	$date = date("d.m.Y H:i", strtotime($r->add_date));
+
+	if (!empty($r->display_name)) {
+		$r->username = $r->display_name;
+	}
+
+	if (!empty($r->guest_name)) {
+		$r->username = "Host <b>" . $r->guest_name . "</b> (" . $r->guest_email . ")";
+	} else {
+		$r->username = "Uživatel <b>" . $r->username . "</b> (" . $r->email . ")";
+	}
+
+	?><div class="card" style="border:1px solid grey">
+		<div class="card-body">
+			<?=$r->username?> | CK: <strong><?=$r->nazev?></strong> | Datum: <?=$date?>
+			<hr />
+			<div class="p-0"><?=$r->content?></div>
+
+			<? if (count($r->prilohy) > 0) { ?>
+			<hr />
+			<div class="row text-center">
+				<div class="col-6 col-lg-3"><?=$lang["RATING_PROFESIONALITA"]?><br /><div class="stars" data-value="<?=$r->rating_profesionalita?>"><span>★</span></div></div>
+				<div class="col-6 col-lg-3"><?=$lang["RATING_DELEGAT"]?><br /><div class="stars" data-value="<?=$r->rating_delegat?>"><span>★</span></div></div>
+				<div class="col-6 col-lg-3"><?=$lang["RATING_INFORMACE"]?><br /><div class="stars" data-value="<?=$r->rating_informace?>"><span>★</span></div></div>
+				<div class="col-6 col-lg-3"><?=$lang["RATING_DOPRAVA"]?><br /><div class="stars" data-value="<?=$r->rating_doprava?>"><span>★</span></div></div>
+			</div>
+			<hr />
+			<h2>Příloha</h2>
+				<? foreach ($r->prilohy as $url) { ?>
+					<a href="<?=$config["baseUrl"] . "/" . $url?>" style="cursor:zoom-in;" target="_blank"><img class="recenze-priloha" src="<?=$config["baseUrl"] . "/" . $url?>"></a>
+				<? } ?>
+			<? } ?>
+			<hr />
+			<div class="text-center">
+				<form method="post" action="<?=$config["baseUrl"]?>/admin/recenze" class="d-inline">
+					<input type="hidden" name="status" value=<?=(!empty($_POST["status"]) ? $_POST["status"] : "")?>>
+					<input type="hidden" name="recenze_id" value="<?=$r->id?>">
+					<? if ($_POST["status"] != ContentStatus::Deleted) { ?>
+						<button name="action" value="delete_recenze" class="btn btn-danger" onclick="return confirm('Skutečně smazat recenzi do koše?');"><i class="fa fa-trash"></i></button>
+					<? } else { ?>
+						<button name="action" value="delete_recenze_permanent" class="btn btn-danger" onclick="return confirm('Skutečně navždy vymazat recenzi?\r\n\r\n\t!!! AKCE JE NEZVRATNÁ !!!');"><i class="fa fa-eraser"></i></button>
+					<? } ?>
+				</form>
+				<div class="btn btn-primary" onclick="showEditForm(<?=$i?>)"><i class="fa fa-edit"></i></div>
+				<? if ($_POST["status"] != ContentStatus::OK) { ?>
+				<form method="post" action="<?=$config["baseUrl"]?>/admin/recenze" class="d-inline">
+					<input type="hidden" name="status" value=<?=(!empty($_POST["status"]) ? $_POST["status"] : "")?>>
+					<input type="hidden" name="recenze_id" value="<?=$r->id?>">
+					<button name="action" value="confirm" class="btn btn-success"><i class="fa fa-check"></i></button>
+				</form>
+				<? } ?>
+			</div>
+
+			<div style="display:none" class="container edit-recenze-form">
+				<div class="h4">Upravit recenzi</div>
+				<? $view->printRecenzeForm("/recenze/" . urlencode($r->nazev), "edit_recenze", "Upravit recenzi", "Text recenze...", $r); ?>
+			</div>
+		</div>
+	</div>
+<? } ?>
+<script>
+	function showEditForm(id) {
+
+		var forms = document.querySelectorAll(".edit-recenze-form");
+
+		for(var i = 0; i < forms.length; i++) {
+			if (i == id && forms[i].style.display == "none") {
+				forms[i].style.display = "block";
+			} else {
+				forms[i].style.display = "none";
+			}
+		}
+	}
+</script>

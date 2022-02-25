@@ -1,0 +1,42 @@
+<?
+
+$articles = $view->get("articles");
+
+?>
+
+<button class="btn btn-success" onclick="window.location.href='<?=$config["baseUrl"]?>/novy-clanek'"><i class="fa fa-plus"></i></button>
+<br /><br />
+<div class="table-responsive">
+	<table class="table table-light table-hover align-middle">
+		<thead>
+			<tr>
+				<th class="sortable" onclick="sortTable(this)">ID <i class="fa fa-arrow-up"></i></th>
+				<th class="sortable" onclick="sortTable(this)">Název <i class="fa fa-arrow-up"></i></th>
+				<th class="sortable" onclick="sortTable(this)">Url <i class="fa fa-arrow-up"></i></th>
+				<th>Akce</th>
+			</tr>
+			</thead>
+			<tbody style="border-top:0">
+
+			<? foreach ($articles as $article) { ?>
+
+			<tr>
+				<td><?=$article->id?></td>
+				<td><?=$article->title/*date("d.m.Y H:i:s", strtotime($article->edit_date))*/?></td>
+				<td><?=$article->url/*date("d.m.Y H:i:s", strtotime($article->edit_date))*/?></td>
+				<td>
+					<button class="btn btn-primary" onclick="window.location.href='<?=$config["baseUrl"]?>/<?=$article->url?>'"><i class="fa fa-edit"></i></button>
+					<form class="d-inline" method="post" action="/admin/articles">
+						<input type="hidden" name="article_id" value="<?=$article->id?>">
+						<button name="action" value="delete" onclick="return confirm('Skutečne smazat článek?\n\n\t<?=$article->title?>\r\n\r\n!!! AKCE JE NEZVRATNÁ !!!')" class="btn btn-danger"><i class="fa fa-trash"></i></button>
+					</form>
+				</td>
+			</tr>
+
+			<? } ?>
+		</tbody>
+	</table>
+</div>
+<script>
+	sortTable(0);
+</script>

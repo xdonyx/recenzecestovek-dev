@@ -1,0 +1,64 @@
+<?
+$banlist = $view->get("banlist");
+?>
+<h3>Přidat ban</h3>
+<style>
+	.highlight td{
+		padding:5px !important;
+	}
+	.highlight:hover {
+		background:lightgrey;
+	}
+</style>
+<form method="post" action="/admin/banlist" class="form-inline">
+	<input style="margin-right:10px" class="form-control" name="ip" type="text" placeholder="IP adresa" />
+	<br/>
+	<button class="btn btn-danger" name="do_ban">Zabanovat</button>
+</form>
+<br />
+<hr />
+<br />
+<h3>Banlist</h3>
+<br />
+
+<? if(!empty($banlist)) { ?>
+
+	<div class="table-responsive">
+		<table class="table table-light table-hover align-middle">
+			<thead>
+				<tr>
+					<th class="sortable" onclick="sortTable(this)">Datum <i class="fa fa-arrow-up"></i></th>
+					<th class="sortable" onclick="sortTable(this)">IP adresa <i class="fa fa-arrow-up"></i></th>
+					<th class="sortable" onclick="sortTable(this)">Přidal admin <i class="fa fa-arrow-up"></i></th>
+					<th>Akce</th>
+				</tr>
+				</thead>
+				<tbody style="border-top:0">
+
+				<? $i = 0; foreach ($banlist as $ban) { ++$i; ?>
+
+				<tr>
+					<td><?=date("d.m.Y H:i:s", strtotime($ban->datum))?></td>
+					<td><a href="<?=$config["baseUrl"]?>/admin/lookup?ip=<?=$ban->ip?>"><?=$ban->ip?></a></td>
+					<td><?=$ban->admin?></td>
+					<td>
+						<form class="form-inline" method="post" action="/admin/banlist">
+							<input type="hidden" name="ip" value="<?=$ban->ip?>">
+							<button name="do_unban" onclick="return confirm('Skutečne zrušit ban IP adresy?\n\n\t<?=$ban->ip?>')" class="btn btn-danger"><i class="fa fa-trash"></i></button>
+						</form>
+					</td>
+				</tr>
+
+				<? } ?>
+			</tbody>
+		</table>
+		<script>
+			sortTable(0);
+			sortTable(0);
+		</script>
+	</div>
+
+<? } else { ?>
+	Nebyly nalezeny žádné výsledky
+<? } ?>
+<br />
